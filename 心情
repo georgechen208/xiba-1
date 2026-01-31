@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日心情 | 简单记录美好</title>
+    <style>
+        /* 全局基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(120deg, #e8f4f8, #fdf2f8);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 页面容器 */
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 标题区域 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        /* 心情选择区 */
+        .mood-select {
+            margin-bottom: 30px;
+        }
+
+        .mood-select h3 {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .mood-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mood-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+
+        .mood-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 不同心情按钮配色 */
+        .happy { background: #48bb78; }
+        .calm { background: #4299e1; }
+        .tired { background: #9f7aea; }
+        .sad { background: #ed8936; }
+        .angry { background: #e53e3e; }
+
+        /* 记录输入区 */
+        .record-area {
+            margin-bottom: 30px;
+        }
+
+        .record-area h3 {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        #mood-text {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            resize: none;
+            font-size: 0.95rem;
+            color: #2d3748;
+            outline: none;
+        }
+
+        #mood-text:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        /* 提交按钮 */
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #4299e1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #3182ce;
+        }
+
+        /* 记录展示区 */
+        .record-show {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .record-show h3 {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        #record-result {
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            color: #2d3748;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题区域 -->
+        <div class="header">
+            <h1>今日心情记录</h1>
+            <p>记录每一刻的情绪，留住生活的小美好</p>
+        </div>
+
+        <!-- 心情选择区 -->
+        <div class="mood-select">
+            <h3>选择今日心情</h3>
+            <div class="mood-buttons">
+                <button class="mood-btn happy">开心 😊</button>
+                <button class="mood-btn calm">平静 😌</button>
+                <button class="mood-btn tired">疲惫 😩</button>
+                <button class="mood-btn sad">难过 😔</button>
+                <button class="mood-btn angry">生气 😠</button>
+            </div>
+        </div>
+
+        <!-- 记录输入区 -->
+        <div class="record-area">
+            <h3>写下今日感想</h3>
+            <textarea id="mood-text" placeholder="今天发生了什么？有什么想记录的..."></textarea>
+        </div>
+
+        <!-- 提交按钮 -->
+        <button class="submit-btn">保存我的心情</button>
+
+        <!-- 记录展示区 -->
+        <div class="record-show">
+            <h3>我的心情记录</h3>
+            <div id="record-result">点击保存后，你的心情记录会显示在这里～</div>
+        </div>
+    </div>
+
+    <!-- 交互逻辑脚本 -->
+    <script>
+        // 定义变量存储选中的心情
+        let selectedMood = "";
+        // 获取所有心情按钮
+        const moodBtns = document.querySelectorAll('.mood-btn');
+        // 获取输入框、提交按钮、展示区域
+        const moodText = document.getElementById('mood-text');
+        const submitBtn = document.querySelector('.submit-btn');
+        const recordResult = document.getElementById('record-result');
+
+        // 为心情按钮添加点击事件
+        moodBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 移除所有按钮的选中样式
+                moodBtns.forEach(b => b.style.opacity = "1");
+                // 为当前点击的按钮添加选中样式
+                btn.style.opacity = "0.7";
+                // 记录选中的心情
+                selectedMood = btn.textContent;
+            });
+        });
+
+        // 提交按钮点击事件
+        submitBtn.addEventListener('click', () => {
+            // 获取输入的文本
+            const text = moodText.value.trim();
+            // 获取当前时间
+            const now = new Date();
+            const timeStr = now.toLocaleString('zh-CN');
+
+            // 验证输入
+            if (!selectedMood) {
+                alert("请先选择你的心情～");
+                return;
+            }
+            if (!text) {
+                alert("请写下你的今日感想～");
+                return;
+            }
+
+            // 展示记录内容
+            recordResult.innerHTML = `
+                <p><strong>时间：</strong>${timeStr}</p>
+                <p><strong>心情：</strong>${selectedMood}</p>
+                <p><strong>感想：</strong>${text}</p>
+            `;
+
+            // 清空输入框
+            moodText.value = "";
+            // 重置心情选中状态
+            moodBtns.forEach(b => b.style.opacity = "1");
+            selectedMood = "";
+
+            // 提示保存成功
+            alert("心情记录保存成功啦～");
+        });
+    </script>
+</body>
+</html>
